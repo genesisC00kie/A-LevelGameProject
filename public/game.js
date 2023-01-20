@@ -20,7 +20,7 @@ class gameScene extends Phaser.Scene {
 
     };
      create(){
-       
+        this.socket = this.registry.get("socket",this.socket)// connecting every scene to the socket connection
             // timer function (with help from @winner_joiner on stack overflow)
         gameScene.seconds = 0;
         this.interval = setInterval(
@@ -178,6 +178,7 @@ class timeTrialEnd extends Phaser.Scene{
     }
     
     create(){
+        this.socket = this.registry.get("socket",this.socket)
         this.add.image(640,480,'finished')
         this.add.text(100, 500, { fontSize: '16px', fill: '#000' })
         .setText('You completed the stage in '+gameScene.seconds+' seconds!').setScale(3);
@@ -208,6 +209,8 @@ preload(){
 }
 
 create(){
+    this.socket = io.connect("https//localhost:8081");
+    this.registry.set("socket",this.socket)
     this.add.image(640,480,'mainMenu')
     const timeTrialButton = this.add.image(100,800,'timeTrialButton').setInteractive()
     const multiPlayerButton = this.add.image(1180,800,'multiPlayerButton').setInteractive()
