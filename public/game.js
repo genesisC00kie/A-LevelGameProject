@@ -1,7 +1,9 @@
 
 
 class gameScene extends Phaser.Scene {
-
+    constructor(){
+        super('gamescene')
+    }
 
      preload(){
         this.k=0
@@ -21,12 +23,13 @@ class gameScene extends Phaser.Scene {
     };
      create(){
         this.socket = this.registry.get("socket",this.socket)// connecting every scene to the socket connection
+        console.log('game scene loaded')
             // timer function (with help from @winner_joiner on stack overflow)
-        gameScene.seconds = 0;
+        this.seconds = 0;
         this.interval = setInterval(
         () => { 
-            gameScene.seconds = gameScene.seconds + 1
-            this.timerText.setText(gameScene.seconds)
+            this.seconds = this.seconds + 1
+            this.timerText.setText(this.seconds)
         },1000);
          //create assets within the game
         this.skyMap = this.make.tilemap({key: 'sky'});
@@ -171,6 +174,9 @@ class gameScene extends Phaser.Scene {
 }
 
 class timeTrialEnd extends Phaser.Scene{
+    constructor(){
+        super('timetrialend')
+    }
     preload(){
         this.load.image('finished','assets/finishedBackground.png' )
         this.load.image('retryButton','assets/retryButton.png')
@@ -188,20 +194,21 @@ class timeTrialEnd extends Phaser.Scene{
         const mainMenuButton = this.add.image(1180,800,'mainMenuButton').setInteractive()
 
         retryButton.on('pointerdown', () => {
-        game.scene.add('gameScene', gameScene, true, { x: 1280, y: 960 });
-        game.scene.remove('timeTrialEnd');
+        this.scene.launch('gamescene').stop()
         console.log('loaded')
     });
 
         mainMenuButton.on('pointerdown', () => {
-        game.scene.add('mainMenu', mainMenu, true, { x: 1280, y: 960 });
-        game.scene.remove('timeTrialEnd');
+            this.scene.launch('menu').stop()
         console.log('loaded')
     });
     }
 }
 
 class mainMenu extends Phaser.Scene{
+    constructor(){
+        super('menu')
+    }
 preload(){
     this.load.image('mainMenu','assets/mainMenu.png')
     this.load.image('timeTrialButton','assets/timeTrialButton.png')
@@ -209,16 +216,14 @@ preload(){
 }
 
 create(){
-    this.socket = io.connect("https//localhost:8081");
+    this.socket = io.connect();
     this.registry.set("socket",this.socket)
     this.add.image(640,480,'mainMenu')
     const timeTrialButton = this.add.image(100,800,'timeTrialButton').setInteractive()
     const multiPlayerButton = this.add.image(1180,800,'multiPlayerButton').setInteractive()
 
     timeTrialButton.on('pointerdown', () => {
-        game.scene.add('gameScene', gameScene, true, { x: 1280, y: 960 });
-        game.scene.remove('mainMenu');
-        console.log('loaded')
+        this.scene.launch('gamescene').stop()
     });
 
     // multiPlayerButton.on('pointerdown', () => {
@@ -230,18 +235,24 @@ create(){
     
 }
 
+class multiplayerRoom extends Phaser.Scene{
+    constructor(){
+        super('multiroom')
+    }
 
+    preload(){}
+    create(){}
+    update(){}
+}
 function endCollision(){
 while (this.k == 0){
 clearInterval(this.interval)
 this.endReached = true
 this.player.anims.stop()
-game.scene.add('timeTrialEnd', timeTrialEnd, true, { x: 1280, y: 960 });
-game.scene.remove('gameScene');
+this.scene.launch('timetrialend').stop()
 
 this.k+=1
 }}
-
 
 
 var config = {
@@ -257,7 +268,7 @@ var config = {
         }
     },
 
-        scene: mainMenu
+        scene: [mainMenu, gameScene, timeTrialEnd]
     };
 
 
