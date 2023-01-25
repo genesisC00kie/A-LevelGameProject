@@ -34,21 +34,21 @@ class gameScene extends Phaser.Scene {
          //create assets within the game
         this.skyMap = this.make.tilemap({key: 'sky'});
         this.tileset = this.skyMap.addTilesetImage('skyShrooms','tiles');
-        this.background = this.skyMap.createLayer('sky', this.tileset,);           
-        this.platforms = this.skyMap.createLayer('platforms', this.tileset,);
-        this.stems = this.skyMap.createLayer('stems', this.tileset,);
+        this.background = this.skyMap.createDynamicLayer('sky', this.tileset,);           
+        this.platforms = this.skyMap.createDynamicLayer('platforms', this.tileset,);
+        this.stems = this.skyMap.createDynamicLayer('stems', this.tileset,);
         this.platforms.setCollisionByExclusion([-1]);
     
         this.goal = this.physics.add.sprite(1200, 87, 'goalFlag')
-        this.goal.setScale(0.1)
-        this.goal.body.setAllowGravity(false);
+        this.goal.setScale(0.1).setOffset(2270,2300)
+        this.goal.body.allowGravity = false
         this.goal.setImmovable(true)
 
         this.physics.world.setBounds(0,0,1280,960)
         //loading the player sprite as a physics based sprite.
-        this.player = this.physics.add.sprite(50,850,"player");
-        //this.player = this.physics.add.sprite(1000,50,"player");
-        this.player.setScale(1.75)
+        //this.player = this.physics.add.sprite(50,850,"player");
+        this.player = this.physics.add.sprite(1000,50,"player");
+        this.player.setScale(1.75).setOffset(-4,-4)
         this.player.setCollideWorldBounds(true)
         this.physics.add.collider(this.player, this.platforms);
         
@@ -118,11 +118,14 @@ class gameScene extends Phaser.Scene {
      update(){
         
         //text always within player view
-        
-        console.log(this.timerText.x+' '+this.timerText.y)
-        this.cameras.main.zoom = 2
-        this.timerText.x=this.player.x+50
-        this.timerText.y=this.player.y-50
+        console.log(this.goal.x,this.goal.y)
+        console.log(this.player.x+' '+this.player.y)
+        this.cameras.main.zoom = 1
+       // this.timerText.x=this.player.x+50
+        //this.timerText.y=this.player.y-50
+
+        this.goal.x = 1200
+        this.goal.y = 87
         //get variable for player velocity
         this.velocity=this.player.body.velocity.x;
         //creating arrow key input
