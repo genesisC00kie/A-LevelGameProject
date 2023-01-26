@@ -25,11 +25,11 @@ class gameScene extends Phaser.Scene {
         this.socket = this.registry.get("socket",this.socket)// connecting every scene to the socket connection
         console.log('game scene loaded')
             // timer function (with help from @winner_joiner on stack overflow)
-        this.seconds = 0;
+        gameScene.seconds = 0;
         this.interval = setInterval(
         () => { 
-            this.seconds = this.seconds + 1
-            this.timerText.setText(this.seconds)
+            gameScene.seconds = gameScene.seconds + 1
+            this.timerText.setText(gameScene.seconds)
         },1000);
          //create assets within the game
         this.skyMap = this.make.tilemap({key: 'sky'});
@@ -47,14 +47,15 @@ class gameScene extends Phaser.Scene {
         this.physics.world.setBounds(0,0,1280,960)
         //loading the player sprite as a physics based sprite.
         //this.player = this.physics.add.sprite(50,850,"player");
-        this.player = this.physics.add.sprite(1000,50,"player");
+        this.player = this.physics.add.sprite(1000,50,"player").setScrollFactor(1 , 1)
+        ;
         this.player.setScale(1.75).setOffset(-4,-4)
         this.player.setCollideWorldBounds(true)
         this.physics.add.collider(this.player, this.platforms);
         
 
         
-        this.timerText = this.add.text(this.player.x+50, this.player.y-50, { fontSize: '16px', fill: '#fff' });
+        this.timerText = this.add.text(/*this.player.x+50*/100, /*this.player.y-50*/100, { fontSize: '80px', fill: '#FFF' });
 
         this.timerText.setText(0);
    
@@ -118,12 +119,16 @@ class gameScene extends Phaser.Scene {
      update(){
         
         //text always within player view
-        console.log(this.goal.x,this.goal.y)
+        //console.log(this.goal.x,this.goal.y)
         console.log(this.player.x+' '+this.player.y)
-        this.cameras.main.zoom = 1
-       // this.timerText.x=this.player.x+50
-        //this.timerText.y=this.player.y-50
+        //console.log(this.timerText.x,this.timerText.y)
+        console.log(this.cameras.main.x,this.cameras.main.y)
+        this.timerText.x=this.player.x+50
+        this.timerText.y=this.player.y-50
 
+        this.cameras.main.zoom = 1.75
+        //this.cameras.main.x = this.player.x*-1
+        //this.cameras.main.y = this.player.y*-1
         this.goal.x = 1200
         this.goal.y = 87
         //get variable for player velocity
@@ -267,7 +272,7 @@ var config = {
         default: 'arcade',
         arcade: {
             gravity: { y: 200 },
-            debug: true
+            debug: false
         }
     },
 
