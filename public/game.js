@@ -22,7 +22,7 @@ class gameScene extends Phaser.Scene {
 
     };
      create(){
-        this.socket = this.registry.get("socket",this.socket)// connecting every scene to the socket connection
+        this.socket = this.registry.get("socket")// connecting every scene to the socket connection
         console.log('game scene loaded')
             // timer function (with help from @winner_joiner on stack overflow)
         gameScene.seconds = 0;
@@ -46,8 +46,8 @@ class gameScene extends Phaser.Scene {
 
         this.physics.world.setBounds(0,0,1280,960)
         //loading the player sprite as a physics based sprite.
-        //this.player = this.physics.add.sprite(50,850,"player");
-        this.player = this.physics.add.sprite(1000,50,"player").setScrollFactor(1 , 1)
+        this.player = this.physics.add.sprite(50,850,"player");
+        //this.player = this.physics.add.sprite(1000,50,"player").setScrollFactor(1 , 1)
         ;
         this.player.setScale(1.75).setOffset(-4,-4)
         this.player.setCollideWorldBounds(true)
@@ -175,7 +175,17 @@ class gameScene extends Phaser.Scene {
             this.facingRight = false;
         };
     
-        this.physics.add.collider(this.player, this.goal, endCollision,null,this);
+        this.physics.add.collider(this.player, this.goal, () => {
+            while (this.k == 0){
+                clearInterval(this.interval)
+                this.endReached = true
+                this.player.anims.stop()
+                this.player.x = 50
+                this.player.y = 850
+                this.scene.launch('timetrialend').stop()
+                
+                this.k+=1}
+        } ,null,this);
 
         
     };
@@ -192,7 +202,7 @@ class timeTrialEnd extends Phaser.Scene{
     }
     
     create(){
-        this.socket = this.registry.get("socket",this.socket)
+        this.socket = this.registry.get("socket")
         this.add.image(640,480,'finished')
         this.add.text(100, 500, { fontSize: '16px', fill: '#000' })
         .setText('You completed the stage in '+gameScene.seconds+' seconds!').setScale(3);
@@ -203,12 +213,10 @@ class timeTrialEnd extends Phaser.Scene{
 
         retryButton.on('pointerdown', () => {
         this.scene.launch('gamescene').stop()
-        console.log('loaded')
     });
 
         mainMenuButton.on('pointerdown', () => {
             this.scene.launch('menu').stop()
-        console.log('loaded')
     });
     }
 }
@@ -224,6 +232,7 @@ preload(){
 }
 
 create(){
+    console.log("main menu loaded")
     this.socket = io.connect();
     this.registry.set("socket",this.socket)
     this.add.image(640,480,'mainMenu')
@@ -234,11 +243,12 @@ create(){
         this.scene.launch('gamescene').stop()
     });
 
-    // multiPlayerButton.on('pointerdown', () => {
-    //     game.scene.add('gameScene', gameScene, true, { x: 1280, y: 960 });
-    //     game.scene.remove('timeTrialEnd');
-    //     console.log('loaded')
-    //});
+    multiPlayerButton.on('pointerdown', () => {
+            //emit to the server to then add the emmiting socket ID into the availiblePlayers array
+        this.socket.emit("addplayer")
+        this.scene.launch('multiroom').stop()
+        console.log('loaded')
+    });
 }
     
 }
@@ -248,19 +258,33 @@ class multiplayerRoom extends Phaser.Scene{
         super('multiroom')
     }
 
-    preload(){}
-    create(){}
-    update(){}
-}
-function endCollision(){
-while (this.k == 0){
-clearInterval(this.interval)
-this.endReached = true
-this.player.anims.stop()
-this.scene.launch('timetrialend').stop()
+    preload(){
+        this.load.image('multiplayer','assets/multiplayer.png')
+        this.load.image('mainMenuButton','assets/mainMenuButton.png')
+    }
+    create(){
+        this.socket = this.registry.get("socket")
+        this.add.image(640,480,'multiplayer')
+        const mainMenuButton = this.add.image(1180,800,'mainMenuButton').setInteractive()
+        mainMenuButton.on('pointerdown', () => {
+            this.socket.emit("removeplayer")
+            this.scene.launch('menu').stop()
+            
+        });
+        this.socket.emit("checkPosition")
 
-this.k+=1
-}}
+        
+        this.socket.on("nextscene", () => {
+
+            this.scene.launch("gamescene").stop()
+        })
+
+    }
+    update(){
+        this.socket.emit("gamestart")
+    }
+}
+
 
 
 var config = {
@@ -276,7 +300,7 @@ var config = {
         }
     },
 
-        scene: [mainMenu, gameScene, timeTrialEnd]
+        scene: [mainMenu, gameScene, timeTrialEnd, multiplayerRoom]
     };
 
 
