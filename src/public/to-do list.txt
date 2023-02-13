@@ -1,9 +1,11 @@
 add items into the game, randomise position like coins but lower amount of items (5-10)
 on pickup, randomise which item is given to player
-1,double x velocity for 15 seconds
-2, allow for a double jump for 15 seconds
+1,double x velocity for 10 seconds
+2, allow for a double jump for 10 seconds
 3, stop opponent for 5 seconds
 (add first two second power-up to single player mode if time allows, but in fixed positions maybe)
+
+alll abilities are triggered, fix it
 
 allow players to see the position of their opponent on screen
 emit the position to the server

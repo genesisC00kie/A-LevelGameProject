@@ -302,10 +302,11 @@ class multiplayerGame extends Phaser.Scene{
         this.facingRight=false
         //load stage and tileset
         this.load.image('tiles', 'assets/skyTileset.png');
+        //loading assets into game
         this.load.image('goalFlag','assets/goalFlag.png')
         this.load.tilemapTiledJSON('sky', 'assets/bouncy_shrooms.json');
         this.load.image('coin','assets/coin.png')
-        //loading assets into game
+        this.load.image('item','assets/itemBox.png')
         this.load.spritesheet('player', 'assets/player.png',
         { frameWidth: 16, frameHeight: 16 }
             );
@@ -350,7 +351,7 @@ class multiplayerGame extends Phaser.Scene{
             this.curCoin.setScale(0.05,0.05).setOffset(4500,5000)
             this.curCoin.body.allowGravity = false
         };
-        /**/ 
+        
         this.physics.add.overlap(this.player, this.coins, (player,coin)=>{
             coin.disableBody(true,true);
             console.log("coin collected")
@@ -358,10 +359,39 @@ class multiplayerGame extends Phaser.Scene{
             this.scoreText.setText(multiplayerGame.score)
         } )
 
-        this.timerText = this.add.text(/*this.player.x+50*/100, /*this.player.y-50*/100, { fontSize: '80px', fill: '#FFF' });
+        this.items = this.physics.add.group() 
+        for (this.q=1; this.q<5; this.q++){
+            this.curItem = this.items.create(Phaser.Math.Between(0, 1280) ,Phaser.Math.Between(0, 960),"item")
+            this.curItem.setScale(0.05,0.05).setOffset(4700,4800)
+            this.curItem.body.allowGravity = false
+        };
+        
+        this.physics.add.overlap(this.player, this.items, (player,item)=>{
+            if(this.itemHeld==null){
+            item.disableBody(true,true);
+            console.log("item collected");
+            this.itemNum = Phaser.Math.Between(1, 3)
+            if(this.itemNum == 1){
+                this.itemHeld = this.speedBoost
+                this.itemText.setText("speed")
+            }
+            else if(this.itemNum == 2){
+                this.itemHeld = this.jumpBoost
+                this.itemText.setText("high jump")
+            }
+            else{
+                this.itemHeld = this.freeze
+                this.itemText.setText("freeze")
+            }
+        }
+        } )
+        
+        this.timerText = this.add.text(/*this.player.x+50*/100, /*this.player.y-50*/100, { fontSize: '80px', fill: '#000' });
         this.timerText.setText(0);
-        this.scoreText = this.add.text(100, 100, { fontSize: '80px', fill: '#FFF' });
+        this.scoreText = this.add.text(100, 100, { fontSize: '80px', fill: '#000' });
         this.scoreText.setText(0);
+        this.itemText = this.add.text(100,100, { fontSize: '80px', fill: '#000' });
+        this.itemText.setText(0);
    
         //player animations
     
@@ -433,8 +463,10 @@ class multiplayerGame extends Phaser.Scene{
         //console.log(this.cameras.main.x,this.cameras.main.y)
         this.timerText.x=this.player.x+50
         this.timerText.y=this.player.y-50
-        this.scoreText.x=this.player.x+-50
+        this.scoreText.x=this.player.x-50
         this.scoreText.y=this.player.y-50
+        this.itemText.x=this.player.x
+        this.itemText.y=this.player.y-100
 
         this.cameras.main.zoom = 1.75
         //this.cameras.main.x = this.player.x*-1
@@ -453,12 +485,20 @@ class multiplayerGame extends Phaser.Scene{
         //player movement
         if (this.endReached == false){
         if (this.cursors.left.isDown || this.keyA.isDown){
-            this.player.setVelocityX(-140)
+            if(this.speed == true){
+                this.player.setVelocityX(-280)
+            }
+            else{
+            this.player.setVelocityX(-140)}
             console.log("left")
             this.player.anims.play('left-walk', true)
         }
         else if (this.cursors.right.isDown || this.keyD.isDown){
-            this.player.setVelocityX(140)
+            if(this.speed == true){
+                this.player.setVelocityX(280)
+            }
+            else{
+            this.player.setVelocityX(140)}
             console.log("right")
             this.player.anims.play('right-walk', true)
         }
@@ -472,10 +512,44 @@ class multiplayerGame extends Phaser.Scene{
                     };
         }
         if ((this.cursors.up.isDown || this.keyW.isDown) && this.player.body.onFloor()){
-            this.player.setVelocityY(-180)
+            if(this.highJump == true){
+                this.player.setVelocityY(-360)
+            }
+            else{
+            this.player.setVelocityY(-180)}
             console.log("up")
+            }
+
+        if ((this.cursors.down.isDown || this.keyS.isDown)&& this.itemHeld == this.speedBoost){
+            console.log("down")
+            console.log("speed")
+            this.itemHeld = null
+            this.itemText.setText(0)
+            this.speed = true
+            setTimeout(
+                () => { 
+                    this.speed = false
+                },10000
+               )}
+            else if ((this.cursors.down.isDown || this.keyS.isDown)&& this.itemHeld == this.jumpBoost){
+            console.log("down")
+            console.log("jump")
+            this.itemHeld = null
+            this.itemText.setText(0)
+            this.highJump = true
+            setTimeout(
+                () => { 
+                    this.highJump = false
+                },10000
+               )}
+            else if ((this.cursors.down.isDown || this.keyS.isDown)&& this.itemHeld == this.freeze){
+                console.log("freeze")
+                this.itemHeld = null
+                this.itemText.setText(0)
+            }
+        
             
-        }}
+        }
         if (this.velocity < 0){
             this.facingRight = true;
             this.facingLeft = false;
