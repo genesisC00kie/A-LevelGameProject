@@ -7,6 +7,11 @@ var availiblePlayers = {};
 var playerPointer = 0;
 var player1 = null
 var player2 = null
+var player1X = 0
+var player1Y = 0
+var player2X = 0
+var player2Y = 0
+
 app.use(express.static(__dirname + '/public'));
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/public/index.html');
@@ -89,7 +94,6 @@ io.on('connection', function (socket) {
 
 socket.on("gamestart", ()=>{
   if(player1 != null && player2 != null){
-    console.log("start")
     if(socket.id == player1 || socket.id == player2){
       socket.emit("nextscene")
     }   
@@ -98,6 +102,20 @@ socket.on("gamestart", ()=>{
   else{
     console.log("waiting for players")
   }
+})
+
+socket.on("updatePosition", ()=>{
+  // if(socket.id == player1){
+  //   player1X = playerX
+  //   player1Y = playerY
+  //   socket.emit("p2Position", player2X, player2Y)
+  // }
+  // if(socket.id == player2){
+  //   player2X = playerX
+  //   player2Y = playerY
+  //   socket.emit("p1Position", player1X, player1Y)
+  // }
+
 })
 });
 
