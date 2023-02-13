@@ -233,7 +233,7 @@ preload(){
 
 create(){
     console.log("main menu loaded")
-    this.socket = io.connect("https://skip-rush.onrender.com");
+    this.socket = io.connect();
     this.registry.set("socket",this.socket)
     this.add.image(640,480,'mainMenu')
     const timeTrialButton = this.add.image(100,800,'timeTrialButton').setInteractive()
