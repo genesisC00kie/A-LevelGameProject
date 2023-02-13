@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
+var cors = require("cors")
 var players = {};
 var availiblePlayers = {};
 var playerPointer = 0;
@@ -12,10 +13,34 @@ var player1Y = 0
 var player2X = 0
 var player2Y = 0
 
+
+
+const corsOptions = {
+  origin: function(origin, callback){
+    if(!origin){
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.indexof(origin) === -1){
+      const msg = "the CORS policy for this site does not allow access from the specified origin.";
+      return callback(new Error(msg), false);
+    }
+
+    return callback(null,this);
+  },
+  credentials:true,
+  optionSuccessStatus: 200,
+  methods: "GET,PUT,POST,OPTIONS",
+  allowedHeaders:'Content-Type,Authorization'
+};
+
+app.use(cors(corsOptions));
+
 app.use(express.static(__dirname + '/public'));
 app.get('/', function (req, res) {
   res.sendFile(__dirname + '/public/index.html');
 });
+
 io.on('connection', function (socket) {
   console.log('a user connected');
   players[socket.id] = {
