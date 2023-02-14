@@ -12,6 +12,8 @@ var player1X = 0
 var player1Y = 0
 var player2X = 0
 var player2Y = 0
+var player1Frozen = false
+var player2Frozen = false
 
 
 
@@ -141,6 +143,25 @@ socket.on("updatePosition", ()=>{
   //   socket.emit("p1Position", player1X, player1Y)
   // }
 
+})
+
+socket.on("freeze", ()=>{
+  if(socket.id == player1){
+    player2Frozen = true}
+  else if(socket.id == player2){
+    player1Frozen = true}
+  
+  if(player2Frozen == true){
+    console.log("player2 frozen")
+    player2Frozen = false
+    socket.to(player2).emit("frozen")
+  }
+  if(player1Frozen == true){
+    console.log("player1 frozen")
+    player1Frozen = false
+    socket.to(player1).emit("frozen")
+    
+  }
 })
 });
 

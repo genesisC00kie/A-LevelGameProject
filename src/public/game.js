@@ -313,6 +313,11 @@ class multiplayerGame extends Phaser.Scene{
     }
 
     create(){
+        this.itemHeld = false 
+        this.itemNum = 0
+        this.speed = false
+        this.highJump = false
+        this.freeze = false
         this.socket = this.registry.get("socket")// connecting every scene to the socket connection
         console.log('game scene loaded')
         multiplayerGame.seconds = 0;
@@ -366,21 +371,19 @@ class multiplayerGame extends Phaser.Scene{
             this.curItem.body.allowGravity = false
         };
         
-        this.physics.add.overlap(this.player, this.items, (player,item)=>{
-            if(this.itemHeld==null){
-            item.disableBody(true,true);
+        this.physics.add.overlap(this.player, this.items, (player,item)=>{//if sprites overlap
+            if(this.itemHeld==false){
+            item.disableBody(true,true);//hide body and disable collisions
             console.log("item collected");
-            this.itemNum = Phaser.Math.Between(1, 3)
+            this.itemNum = Math.floor(Math.random() * 3) + 1;//generates random number between 1 and 3
+            this.itemHeld = true
             if(this.itemNum == 1){
-                this.itemHeld = this.speedBoost
                 this.itemText.setText("speed")
             }
             else if(this.itemNum == 2){
-                this.itemHeld = this.jumpBoost
                 this.itemText.setText("high jump")
             }
             else{
-                this.itemHeld = this.freeze
                 this.itemText.setText("freeze")
             }
         }
@@ -449,9 +452,24 @@ class multiplayerGame extends Phaser.Scene{
         //camera
         this.cameras.main.startFollow(this.player);
         this.cameras.main.setBounds(0,0,1280,960);
+
+        this.socket.on("frozen", ()=>{
+            console.log("frozen")
+            this.player.setTint(0x0000FF)
+            this.input.keyboard.enabled = false
+            this.player.setVelocityX(0)
+            setTimeout(
+                () => { 
+                    this.input.keyboard.enabled = true 
+                    this.player.setTint(0xFFFFFF)
+                },5000
+               ) 
+        })
     };
 
     update(){
+        if(this.speed==true){
+        console.log("true")}
         this.playerX = this.player.x 
         this.playerY = this.player.y
         this.socket.emit("updatePosition",this.playerX,this.playerY)
@@ -489,7 +507,8 @@ class multiplayerGame extends Phaser.Scene{
                 this.player.setVelocityX(-280)
             }
             else{
-            this.player.setVelocityX(-140)}
+            this.player.setVelocityX(-140)
+        }
             console.log("left")
             this.player.anims.play('left-walk', true)
         }
@@ -498,7 +517,8 @@ class multiplayerGame extends Phaser.Scene{
                 this.player.setVelocityX(280)
             }
             else{
-            this.player.setVelocityX(140)}
+            this.player.setVelocityX(140)
+        }
             console.log("right")
             this.player.anims.play('right-walk', true)
         }
@@ -520,10 +540,13 @@ class multiplayerGame extends Phaser.Scene{
             console.log("up")
             }
 
-        if ((this.cursors.down.isDown || this.keyS.isDown)&& this.itemHeld == this.speedBoost){
+        if ((this.cursors.down.isDown || this.keyS.isDown)&& this.itemHeld == true){
             console.log("down")
+
+            if(this.itemNum == 1){
             console.log("speed")
-            this.itemHeld = null
+            this.itemHeld = false
+            this.itemNum = 0
             this.itemText.setText(0)
             this.speed = true
             setTimeout(
@@ -531,10 +554,10 @@ class multiplayerGame extends Phaser.Scene{
                     this.speed = false
                 },10000
                )}
-            else if ((this.cursors.down.isDown || this.keyS.isDown)&& this.itemHeld == this.jumpBoost){
-            console.log("down")
+            else if (this.itemNum == 2){
             console.log("jump")
-            this.itemHeld = null
+            this.itemHeld = false
+            this.itemNum = 0
             this.itemText.setText(0)
             this.highJump = true
             setTimeout(
@@ -542,11 +565,13 @@ class multiplayerGame extends Phaser.Scene{
                     this.highJump = false
                 },10000
                )}
-            else if ((this.cursors.down.isDown || this.keyS.isDown)&& this.itemHeld == this.freeze){
+            else if (this.itemNum == 3){
                 console.log("freeze")
-                this.itemHeld = null
+                this.itemHeld = false
+                this.itemNum = 0
                 this.itemText.setText(0)
-            }
+                this.socket.emit("freeze")
+            }}
         
             
         }
