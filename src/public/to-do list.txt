@@ -1,15 +1,4 @@
 
-(add first two second power-up to single player mode if time allows, but in fixed positions maybe)
 
-allow players to see the position of their opponent on screen
-emit the position to the server
-the server sends the opponents position to the client
-a second sprite is added with opponents position
+make arrows to show general direction
 
-when one player finished, make them wait for the other to finish.
-when both finish send their score and time to the server, calculate how much time one has than the other.
-award more points to the player with lower time
-send back to client to display on screen.#
-
-when players finish the stage have both of them removed from the availible players array, set both players to null
-and allow two new players to join the game
